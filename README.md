@@ -5,21 +5,21 @@ Maybe add .htaccess to allow access only to deploy.php
 
 ## Adding new Plugins
 ### 1 - Add a SSH key pair and grant access to www-data to at least read it
-`
+```
 cd /var/www/.ssh
 ssh-keygen
 sudo chown -R www-data /var/www/.ssh
-`
+```
 
 ### 2 - Set the ssh config file
 `vim var/www/.ssh/config`
 (add something like example below)
-`
+```
 Host gsg-onboard.github.com <br>
   HostName github.com <br>
   User git <br>
   IdentityFile ~/.ssh/gsg-onboard.id_rsa <br>
-`
+```
 
 ### 3 - Add the webhook on Github
 *Payload URL:* http://playground.gsgmothership.com/plugin-updater/git-deploy/deploy.php
