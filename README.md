@@ -15,10 +15,10 @@ sudo chown -R www-data /var/www/.ssh
 `vim var/www/.ssh/config`
 (add something like example below)
 `
-Host gsg-onboard.github.com \n
-  HostName github.com \n
-  User git \n
-  IdentityFile ~/.ssh/gsg-onboard.id_rsa \n
+Host gsg-onboard.github.com <br>
+  HostName github.com <br>
+  User git <br>
+  IdentityFile ~/.ssh/gsg-onboard.id_rsa <br>
 `
 
 ### 3 - Add the webhook on Github
