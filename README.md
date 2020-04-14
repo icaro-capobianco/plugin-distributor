@@ -13,7 +13,8 @@ sudo chown -R www-data /var/www/.ssh
 
 ### 2 - Set the ssh config file
 `vim var/www/.ssh/config`
-(add something like example below)
+<br>
+Then add something like example below
 ```
 Host gsg-onboard.github.com
   HostName github.com
@@ -22,9 +23,9 @@ Host gsg-onboard.github.com
 ```
 
 ### 3 - Add the webhook on Github
-*Payload URL:* http://playground.gsgmothership.com/plugin-updater/git-deploy/deploy.php <br>
-*Secret:* Your Token, set during installation <br>
-*Content Type:* application/json <br>
+**Payload URL:** http://playground.gsgmothership.com/plugin-updater/git-deploy/deploy.php <br>
+**Secret:** Your Token, set during installation <br>
+**Content Type:** application/json <br>
 Set to push events
 <br><br>
 *obs: first request will fail. Test pushing to the release branch, other branches will result in a error. The errors can be seen in the Webhook page, under the Recent Deliveries section, on the Response tabs. <br>
