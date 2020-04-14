@@ -96,7 +96,11 @@ if (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_
         
         $repo_url = $json['repository']['ssh_url'];
         $repo_name = $json['repository']['name'];
+
+        $repo_url = str_replace( 'github.com', "$repo_name.github.com", $repo_url );
+
         $repo_dir_path = $DIR . $repo_name;
+        $git_dir = " --git-dir=" . $repo_dir_path . "/.git ";
 
         fputs($file, $content . PHP_EOL);
 
@@ -120,9 +124,9 @@ if (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_
             exec_and_handle( BEFORE_PULL . " 2>&1" );
         }
 
-        exec_and_handle( GIT . " pull 2>&1" );
-
-        $zipCommand = "git --git-dir=" . $repo_dir_path . "/.git archive " . BRANCH_NAME . " --prefix=$repo_name/ -o " . ZIP_TO . "$repo_name.zip";
+        exec_and_handle( GIT . $git_dir . " pull 2>&1" );
+        
+        $zipCommand = "git" . $git_dir . "archive " . BRANCH_NAME . " --prefix=$repo_name/ -o " . ZIP_TO . "$repo_name.zip";
         exec_and_handle( $zipCommand );
 
         if (!empty(AFTER_PULL)) {
