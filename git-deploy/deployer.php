@@ -1,5 +1,5 @@
 <?php
-$content = file_get_contents("php://input");
+$content = get_input();
 $json    = json_decode($content, true);
 $file    = fopen(LOGFILE, "a");
 $time    = time();
@@ -47,11 +47,17 @@ function forbid($file, $reason) {
     exit;
 }
 
-function exec_and_handle( $cmd ) {
-    exec($cmd, $output, $exit);
+function exec_and_handle( $cmd, $shell = false ) {
+    global $file;
 
-    // reformat the output as a string
-    $output = (!empty($output) ? implode("\n", $output) : "[no output]") . "\n";
+    if ( $shell ) {
+        $output = shell_exec( $cmd );
+        $exit = 0;
+    } else {
+        exec($cmd, $output, $exit);
+        // reformat the output as a string
+        $output = (!empty($output) ? implode("\n", $output) : "[no output]") . "\n";
+    }
 
     // if an error occurred, return 500 and log the error
     if ($exit !== 0) {
@@ -62,6 +68,10 @@ function exec_and_handle( $cmd ) {
     // write the output to the log and the body
     fputs($file, $output);
     echo $output;
+
+    if ($exit !== 0) {
+        exit();
+    }
 }
 
 function validate_repo( $repo_path ) {
@@ -74,8 +84,8 @@ function pull_repo( $repo_url, $repo_path ) {
 
 function handle_error( $message ) {
     global $file;
-    fputs($file, $error);
-    echo $error;
+    fputs($file, $message);
+    echo $message;
 }
 
 // Check for a GitHub signature
@@ -97,7 +107,9 @@ if (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_
         $repo_url = $json['repository']['ssh_url'];
         $repo_name = $json['repository']['name'];
 
-        $repo_url = str_replace( 'github.com', "$repo_name.github.com", $repo_url );
+        if ( GIT_OVERWRITE ) {
+            $repo_url = str_replace( 'github.com', "$repo_name.github.com", $repo_url );
+        }
 
         $repo_dir_path = $DIR . $repo_name;
         $git_dir = " --git-dir=" . $repo_dir_path . "/.git ";
@@ -114,7 +126,7 @@ if (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_
 
         if( ! validate_repo( $repo_dir_path ) ) {
             http_response_code(500);
-            handle_error( 'Could make a valid repo' );
+            handle_error( 'Could not make a valid repo' );
         }
 
         fputs($file, "*** AUTO PULL INITIATED ***" . "\n");
@@ -125,13 +137,38 @@ if (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_
         }
 
         exec_and_handle( GIT . $git_dir . " pull 2>&1" );
-        
-        $zipCommand = "git" . $git_dir . "archive " . BRANCH_NAME . " --prefix=$repo_name/ -o " . ZIP_TO . "$repo_name.zip";
-        exec_and_handle( $zipCommand );
 
         if (!empty(AFTER_PULL)) {
             fputs($file, "*** AFTER_PULL INITIATED ***" . "\n");
             exec_and_handle( AFTER_PULL . " 2>&1" );
+        }
+
+        if ( ! empty(INSTALL_CMD) ) {
+            $installCmd = "cd $repo_dir_path && " . INSTALL_CMD;
+            exec_and_handle( $installCmd );
+        }
+
+        if ( file_exists( $repo_dir_path . '/git-archive-all.sh' ) ) {
+            $current_dir = __DIR__;
+            chdir( $repo_dir_path );
+
+            $args = "--prefix $repo_name/ $repo_name.zip 2>&1";
+            $zipCommand = "sh git-archive-all.sh $args";
+            exec_and_handle( $zipCommand, false );
+
+            chdir( $current_dir );
+
+            if ( file_exists( $repo_dir_path . "/$repo_name.zip" ) ) {
+                exec_and_handle( "mv $repo_dir_path/$repo_name.zip ../wp-update-server/packages/" );
+            } else {
+                $output = "Failed to create zip file with git-archive-al.sh";
+                fputs($file, $output);
+                echo $output;
+            }
+
+        } else {
+            $zipCommand = "git" . $git_dir . "archive " . BRANCH_NAME . " --prefix=$repo_name/ -o " . ZIP_TO . "$repo_name.zip 2>&1";
+            exec_and_handle( $zipCommand );
         }
 
         fputs($file, "*** AUTO PULL COMPLETE ***" . "\n");
