@@ -153,7 +153,7 @@ if (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_
             chdir( $repo_dir_path );
 
             $args = "--prefix $repo_name/ $repo_name.zip 2>&1";
-            $zipCommand = "sh git-archive-all.sh $args";
+            $zipCommand = "bash git-archive-all.sh $args";
             exec_and_handle( $zipCommand, false );
 
             chdir( $current_dir );
