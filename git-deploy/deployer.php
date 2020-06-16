@@ -152,19 +152,31 @@ if (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_
             $current_dir = __DIR__;
             chdir( $repo_dir_path );
 
-            $args = "--prefix $repo_name/ $repo_name.zip 2>&1";
+            $args = "--prefix $repo_name/ 2>&1";
             $zipCommand = "bash git-archive-all.sh $args";
             exec_and_handle( $zipCommand, false );
 
-            chdir( $current_dir );
-
-            if ( file_exists( $repo_dir_path . "/$repo_name.zip" ) ) {
-                exec_and_handle( "mv $repo_dir_path/$repo_name.zip ../wp-update-server/packages/" );
+            if ( file_exists( "$repo_name.tar" ) ) {
+                $temp_dir = "../../wp-update-server/packages/tmp/";
+                exec_and_handle( "mv $repo_name.tar $temp_dir" );
+                exec_and_handle( "tar -xvf $temp_dir$repo_name.tar --directory $temp_dir" );
+                if ( file_exists( $temp_dir . "$repo_name.tar" ) ) {
+                    chdir( $temp_dir );
+                    exec_and_handle( "zip -r ../$repo_name.zip $repo_name" );
+                } else {
+                    $output = "Failed to extract tar file to packages/temp dir";
+                    fputs($file, $output);
+                    echo $output;
+                    exit();
+                }
             } else {
-                $output = "Failed to create zip file with git-archive-al.sh";
+                $output = "Failed to create tar file with git-archive-al.sh";
                 fputs($file, $output);
                 echo $output;
+                exit();
             }
+
+            chdir( $current_dir );
 
         } else {
             $zipCommand = "git" . $git_dir . "archive " . BRANCH_NAME . " --prefix=$repo_name/ -o " . ZIP_TO . "$repo_name.zip 2>&1";

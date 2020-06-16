@@ -1,0 +1,4 @@
+/wp-update-server/packages/tmp/*
+*.zip
+*.log
+*.tar

@@ -9,7 +9,7 @@ define("GIT_OVERWRITE", true);                                         // The pa
 define("MAX_EXECUTION_TIME", 180);                                     // Override for PHP's max_execution_time (may need set in php.ini)
 define("BEFORE_PULL", '');                                             // A command to execute before pulling
 define("AFTER_PULL", '');                                              // A command to execute after successfully pulling
-define("INSTALL_CMD", 'composer install --prefer-source');             // A command intall required packages
+define("INSTALL_CMD", 'composer install --prefer-source --no-dev');             // A command intall required packages
 define("ZIP_TO", '../wp-update-server/packages/');                     // Path where the plugin will be zip will be sent to
 
 function get_input() {
