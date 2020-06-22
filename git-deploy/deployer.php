@@ -108,7 +108,7 @@ if (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_
         $repo_name = $json['repository']['name'];
 
         if ( GIT_OVERWRITE ) {
-            $repo_url = str_replace( 'github.com', "$repo_name.github.com", $repo_url );
+            $repo_url = str_replace( 'github.com', "$repo_name", $repo_url );
         }
 
         $repo_dir_path = $DIR . $repo_name;
