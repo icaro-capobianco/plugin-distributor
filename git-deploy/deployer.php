@@ -159,9 +159,12 @@ if (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_
             if ( file_exists( "$repo_name.tar" ) ) {
                 $temp_dir = "../../wp-update-server/packages/tmp/";
                 exec_and_handle( "mv $repo_name.tar $temp_dir" );
-                exec_and_handle( "tar -xvf $temp_dir$repo_name.tar --directory $temp_dir" );
+                exec_and_handle( "tar -xvf $temp_dir$repo_name.tar --directory $temp_dir$repo_name/" );
                 if ( file_exists( $temp_dir . "$repo_name.tar" ) ) {
                     chdir( $temp_dir );
+                    chdir( "$repo_name/" );
+                    exec_and_handle( "composer install --prefer-dist --no-dev" );
+                    chdir( "../" );
                     exec_and_handle( "zip -r ../$repo_name.zip $repo_name" );
                 } else {
                     $output = "Failed to extract tar file to packages/temp dir";

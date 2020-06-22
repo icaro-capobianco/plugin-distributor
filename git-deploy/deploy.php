@@ -6,7 +6,7 @@ define("BRANCH_NAME", "release");                                      // The br
 define("LOGFILE", "deploy.log");                                       // The name of the file you want to log to.
 define("GIT", "/usr/bin/git");                                         // The path to the git executable
 define("GIT_OVERWRITE", true);                                         // The path to the git executable
-define("MAX_EXECUTION_TIME", 180);                                     // Override for PHP's max_execution_time (may need set in php.ini)
+define("MAX_EXECUTION_TIME", 360);                                     // Override for PHP's max_execution_time (may need set in php.ini)
 define("BEFORE_PULL", '');                                             // A command to execute before pulling
 define("AFTER_PULL", '');                                              // A command to execute after successfully pulling
 define("INSTALL_CMD", 'composer install --prefer-source --no-dev');             // A command intall required packages
