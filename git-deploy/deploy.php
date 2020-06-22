@@ -1,5 +1,5 @@
 <?php
-define("TOKEN", "z3Jmd2mRsnPwwE8ciowMXi");                                       // The secret token to add as a GitHub or GitLab secret, or otherwise as https://www.example.com/?token=secret-token
+define("TOKEN", "secret-token-shouldntbecommited");                             // The secret token to add as a GitHub or GitLab secret, or otherwise as https://www.example.com/?token=secret-token
 define("DIR", "../plugins/");                                          // The path to where you store your plugins
 define("BRANCH", "refs/heads/release");                                // The branch route
 define("BRANCH_NAME", "release");                                      // The branch route
