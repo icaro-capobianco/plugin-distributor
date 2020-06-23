@@ -1,23 +1,19 @@
 <?php
-$content = get_input();
-$json    = json_decode($content, true);
-$file    = fopen(LOGFILE, "a");
-$time    = time();
-$token   = false;
-$sha     = false;
-$DIR     = preg_match("/\/$/", DIR) ? DIR : DIR . "/";
 
+function respondOK( $text = null ) {
 
-function respondOK($text = null) {
-    // check if fastcgi_finish_request is callable
-    if (is_callable('fastcgi_finish_request')) {
+    header("Content-Type: text/plain");
+    // header($serverProtocol . ' 200 OK');
+    // header('Content-Encoding: none');
+    // header('Content-Length: ' . ob_get_length());
+    // $serverProtocol = filter_input( INPUT_SERVER, 'SERVER_PROTOCOL', FILTER_SANITIZE_STRING );
+    
+    if ( is_callable('fastcgi_finish_request') ) {
+
         if ($text !== null) {
             echo $text;
         }
-        /*
-         * http://stackoverflow.com/a/38918192
-         * This works in Nginx but the next approach not
-         */
+
         session_write_close();
         fastcgi_finish_request();
  
@@ -31,21 +27,14 @@ function respondOK($text = null) {
     if ($text !== null) {
         echo $text;
     }
- 
-    $serverProtocol = filter_input(INPUT_SERVER, 'SERVER_PROTOCOL', FILTER_SANITIZE_STRING);
-    header($serverProtocol . ' 200 OK');
-    // Disable compression (in case content length is compressed).
-    header('Content-Encoding: none');
-    header('Content-Length: ' . ob_get_length());
- 
-    // Close the connection.
+
     header('Connection: close');
  
     ob_end_flush();
-    ob_flush();
-    flush();
-}
+    // ob_flush();
+    // flush();
 
+}
 
 respondOK( "Processing request" );
 
@@ -63,7 +52,6 @@ date_default_timezone_set("UTC");
 fputs($file, date("d-m-Y (H:i:s)", $time) . "\n");
 
 // specify that the response does not contain HTML
-header("Content-Type: text/plain");
 
 // use user-defined max_execution_time
 if (!empty(MAX_EXECUTION_TIME)) {
@@ -144,7 +132,7 @@ if (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_
     forbid($file, "No token detected");
 } else {
     // check if pushed branch matches branch specified in config
-    if ($json["ref"] === BRANCH) {
+    if ( $json["ref"] === BRANCH ) {
         
         $repo_url = $json['repository']['ssh_url'];
         $repo_name = $json['repository']['name'];
@@ -185,48 +173,27 @@ if (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_
             exec_and_handle( AFTER_PULL . " 2>&1" );
         }
 
-        if ( ! empty(INSTALL_CMD) ) {
-            $installCmd = "cd $repo_dir_path && " . INSTALL_CMD;
-            exec_and_handle( $installCmd );
-        }
+        $current_dir = __DIR__;
 
-        if ( file_exists( $repo_dir_path . '/git-archive-all.sh' ) ) {
-            $current_dir = __DIR__;
-            chdir( $repo_dir_path );
+        chdir( $repo_dir_path );
+        $zipCommand = "git" . $git_dir . "archive " . BRANCH_NAME . " --prefix=$repo_name/ -o  $repo_name.zip 2>&1";
+        exec_and_handle( $zipCommand );
 
-            $args = "--prefix $repo_name/ 2>&1";
-            $zipCommand = "bash git-archive-all.sh $args";
-            exec_and_handle( $zipCommand, false );
+        $temp_dir = "../../wp-update-server/packages/tmp/";
 
-            if ( file_exists( "$repo_name.tar" ) ) {
-                $temp_dir = "../../wp-update-server/packages/tmp/";
-                exec_and_handle( "mv $repo_name.tar $temp_dir" );
-                exec_and_handle( "tar -xvf $temp_dir$repo_name.tar --directory $temp_dir$repo_name/" );
-                if ( file_exists( $temp_dir . "$repo_name.tar" ) ) {
-                    chdir( $temp_dir );
-                    chdir( "$repo_name/" );
-                    exec_and_handle( "composer install --prefer-dist --no-dev" );
-                    chdir( "../" );
-                    exec_and_handle( "zip -r ../$repo_name.zip $repo_name" );
-                } else {
-                    $output = "Failed to extract tar file to packages/temp dir";
-                    fputs($file, $output);
-                    echo $output;
-                    exit();
-                }
-            } else {
-                $output = "Failed to create tar file with git-archive-al.sh";
-                fputs($file, $output);
-                echo $output;
-                exit();
-            }
+        exec_and_handle( "mv $repo_name.zip $temp_dir" );
 
-            chdir( $current_dir );
+        chdir( $temp_dir );
 
-        } else {
-            $zipCommand = "git" . $git_dir . "archive " . BRANCH_NAME . " --prefix=$repo_name/ -o " . ZIP_TO . "$repo_name.zip 2>&1";
-            exec_and_handle( $zipCommand );
-        }
+        exec_and_handle( "unzip $repo_name.zip" );
+
+        chdir( "$repo_name/" );
+        exec_and_handle( "composer install --prefer-dist --no-dev" );
+        chdir( "../" );
+        exec_and_handle( "zip -r ../$repo_name.zip $repo_name/" );
+        exec_and_handle( "rm -r *" );
+
+        chdir( $current_dir );
 
         fputs($file, "*** AUTO PULL COMPLETE ***" . "\n");
         
