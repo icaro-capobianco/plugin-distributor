@@ -178,9 +178,10 @@ class Deployer {
 	}
 	private function exec_and_handle( $cmd ) {
 
+		$this->log( "[CMD] $cmd" );
 		exec( $cmd, $output, $exit );
 		$output = empty( $output ) ? implode( "\n", $output ) : '[no output]';
-		$log_type = $exit === 0 ? 'COMMAND' : 'CMD_ERROR';
+		$log_type = $exit === 0 ? 'CMD_SUCCCESS' : 'CMD_ERROR';
 		$this->log( "[$log_type][$exit] $cmd \n $output" );
 
 		if ( $exit !== 0 ) {
