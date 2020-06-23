@@ -79,6 +79,7 @@ class Deployer {
 		$this->repo_name    = $repo_name;
 		$this->repo_path    = $repo_path;
 		$this->repo_ssh_url = $repo_ssh_url;
+		$this->plugins_path = $plugins_dir;
 
 	}
 	private function retrieve_token() {
@@ -181,9 +182,9 @@ class Deployer {
 		$this->log( "[CMD] $cmd" );
 		exec( $cmd, $output, $exit );
 		if ( empty( $output ) ) {
-			$output === '[no output]';
+			$output = '[no output]';
 		} elseif ( is_array( $output ) ) {
-			$output === implode( "\n", $output );
+			$output = implode( "\n", $output );
 		} else {
 			$output = print_r( $output, true );
 		}
@@ -195,8 +196,23 @@ class Deployer {
 		}
 	}
 	private function archive_repo() {
-		$this->log("[STEP] Archiving Repo");
-		$this->exec_and_handle( "zip -r " . ZIP_TO .  "$this->repo_name.zip $this->repo_path/" );
+
+		$this->log("[STEP] Check existing Archive");
+		$zip_file = ZIP_TO .  "$this->repo_name.zip";
+		if ( file_exists( $zip_file ) ) {
+			$this->exec_and_handle( "rm $zip_file" );
+		}
+
+		$this->log("[STEP] Move to repo dir");
+		$initial_dir = __DIR__;
+		chdir( $this->repo_path );
+		$this->log("[STEP] Run install CMD");
+		$this->exec_and_handle(INSTALL_CMD);
+		$this->log("[STEP] ZIP Plugin");
+		chdir( '../' );
+		$this->exec_and_handle( "zip -r $this->repo_name.zip $this->repo_name/" );
+		chdir( $initial_dir );
+		$this->exec_and_handle( "mv $this->plugins_path$this->repo_name.zip ".ZIP_TO );
 		$this->respond( 200, "Archive created successfully", true );
 	}
 
