@@ -7,6 +7,18 @@ $token   = false;
 $sha     = false;
 $DIR     = preg_match("/\/$/", DIR) ? DIR : DIR . "/";
 
+
+ignore_user_abort(true);
+set_time_limit(MAX_EXECUTION_TIME);
+ob_start();
+echo "Request being processed";
+ob_end_flush();
+ob_flush();
+flush();
+session_write_close();
+fastcgi_finish_request();
+
+
 // retrieve the token
 if (!$token && isset($_SERVER["HTTP_X_HUB_SIGNATURE"])) {
     list($algo, $token) = explode("=", $_SERVER["HTTP_X_HUB_SIGNATURE"], 2) + array("", "");
@@ -115,16 +127,6 @@ if (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_
         $git_dir = " --git-dir=" . $repo_dir_path . "/.git ";
 
         fputs($file, $content . PHP_EOL);
-
-        ignore_user_abort(true);
-        set_time_limit(MAX_EXECUTION_TIME);
-        ob_start();
-        echo "Pull request being processed";
-        ob_end_flush();
-        ob_flush();
-        flush();
-        session_write_close();
-        fastcgi_finish_request();
 
         // ensure directory is a repository
         if( ! file_exists( $repo_dir_path ) ) {
