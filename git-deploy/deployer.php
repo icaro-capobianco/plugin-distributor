@@ -123,6 +123,8 @@ if (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_
         ob_end_flush();
         ob_flush();
         flush();
+        session_write_close();
+        fastcgi_finish_request();
 
         // ensure directory is a repository
         if( ! file_exists( $repo_dir_path ) ) {
