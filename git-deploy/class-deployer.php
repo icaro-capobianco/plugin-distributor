@@ -23,6 +23,7 @@ class Deployer {
 	
 					$this->load_variables( $parsed );
 					$this->validate_token();
+					$this->log("[STEP] Validating Branch");
 					if ( $this->ref === BRANCH_REF ) {
 
 						$this->ensure_local_repo();
@@ -48,6 +49,7 @@ class Deployer {
 		return $open;
 	}
 	private function parse_json( $json ) {
+		$this->log("[STEP] Parsing JSON");
 		$parsed = json_decode( $json, true );
 		if ( ! $parsed ) {
 			$this->log( "[PARSE_ERROR] Could not decode json \n$json" );
@@ -61,6 +63,7 @@ class Deployer {
 	private $repo_ssh_url;
 	private function load_variables( $parsed ) {
 
+		$this->log("[STEP] Loading Variables");
 		$ref           = $parsed['ref'];
 		$repo_name     = $parsed['repository']['name'];
 		$repo_ssh_url  = $parsed['repository']['ssh_url'];
@@ -93,6 +96,7 @@ class Deployer {
 		return $token;
 	}
 	private function validate_token() {
+		$this->log("[STEP] Validating Token");
 		$token = $this->retrieve_token();
 		// Github Token
 		if ( ! empty(TOKEN) && isset( $_SERVER["HTTP_X_HUB_SIGNATURE"]) ) {
@@ -112,6 +116,7 @@ class Deployer {
 		}
 	}
 	private function ensure_local_repo() {
+		$this->log("[STEP] Ensure Local Repo");
         if( ! file_exists( $this->repo_path ) ) {
 			$this->respond( 200, "Cloning repo" );
 			$this->clone_repo();
@@ -122,6 +127,7 @@ class Deployer {
         }
 	}
 	private function valid_repo() {
+		$this->log("[STEP] Validate Repo");
 		$result = is_dir( $this->repo_path ) && file_exists( $this->repo_path . '/.git' );
 		if ( ! $result ) {
 			$this->log( "[ERROR] Invalid repo at $this->repo_path" );
@@ -130,9 +136,11 @@ class Deployer {
 		return $result;
 	}
 	private function clone_repo() {
+		$this->log("[STEP] Clone Repo");
 		$this->exec_and_handle( GIT . ' clone -b ' . BRANCH_NAME . ' ' . $this->repo_ssh_url . ' ' . $this->repo_path . ' 2>&1' );
 	}
 	private function pull_repo() {
+		$this->log("[STEP] Pull Repo");
         $this->exec_and_handle( GIT . " --git-dir=$this->repo_path/.git pull 2>&1" );
 	}
 	private function forbid( $reason ) {
@@ -180,6 +188,7 @@ class Deployer {
 		}
 	}
 	private function archive_repo() {
+		$this->log("[STEP] Archiving Repo");
 		$this->exec_and_handle( "zip -r " . ZIP_TO .  "$this->repo_name.zip $this->repo_path/" );
 		$this->respond( 200, "Archive created successfully", true );
 	}
