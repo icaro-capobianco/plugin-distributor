@@ -28,6 +28,7 @@ class Deployer {
 						$this->ensure_local_repo();
 						if ( $this->valid_repo() ) {
 							$this->pull_repo();
+							$this->respond( 200, "Generating repo ZIP" );
 							$this->archive_repo();
 						}
 					} else {
