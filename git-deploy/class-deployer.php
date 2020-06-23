@@ -177,7 +177,7 @@ class Deployer {
 	private function log( $log ) {
 		fputs($this->logfile, "$log\n\n");
 	}
-	private function exec_and_handle( $cmd ) {
+	private function exec_and_handle( $cmd, $ignore_errors = false ) {
 
 		$this->log( "[CMD] $cmd" );
 		exec( $cmd, $output, $exit );
@@ -191,7 +191,7 @@ class Deployer {
 		$log_type = $exit === 0 ? 'CMD_SUCCCESS' : 'CMD_ERROR';
 		$this->log( "[$log_type][$exit] $cmd \n $output" );
 
-		if ( $exit !== 0 ) {
+		if ( ! $ignore_errors && $exit !== 0 ) {
 			$this->respond( 500, 'Internal Error', true );
 		}
 	}
@@ -207,7 +207,7 @@ class Deployer {
 		$initial_dir = __DIR__;
 		chdir( $this->repo_path );
 		$this->log("[STEP] Run install CMD");
-		$this->exec_and_handle(INSTALL_CMD);
+		$this->exec_and_handle(INSTALL_CMD, true);
 		$this->log("[STEP] ZIP Plugin");
 		chdir( '../' );
 		$this->exec_and_handle( "zip -r $this->repo_name.zip $this->repo_name/" );
