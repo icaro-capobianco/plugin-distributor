@@ -180,7 +180,13 @@ class Deployer {
 
 		$this->log( "[CMD] $cmd" );
 		exec( $cmd, $output, $exit );
-		$output = empty( $output ) ? implode( "\n", $output ) : '[no output]';
+		if ( empty( $output ) ) {
+			$output === '[no output]';
+		} elseif ( is_array( $output ) ) {
+			$output === implode( "\n", $output );
+		} else {
+			$output = print_r( $output, true );
+		}
 		$log_type = $exit === 0 ? 'CMD_SUCCCESS' : 'CMD_ERROR';
 		$this->log( "[$log_type][$exit] $cmd \n $output" );
 
