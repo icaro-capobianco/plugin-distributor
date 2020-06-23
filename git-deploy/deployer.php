@@ -116,6 +116,14 @@ if (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_
 
         fputs($file, $content . PHP_EOL);
 
+        ignore_user_abort(true);
+        set_time_limit(MAX_EXECUTION_TIME);
+        ob_start();
+        echo "Pull request being processed";
+        ob_end_flush();
+        ob_flush();
+        flush();
+
         // ensure directory is a repository
         if( ! file_exists( $repo_dir_path ) ) {
             pull_repo( $repo_url, $repo_dir_path );
