@@ -86,12 +86,13 @@ class Deployer {
 		} elseif (isset($_GET["token"])) {
 			$token = $_GET["token"];
 		}
+		$this->log( '[TOKEN]', $token );
 		return $token;
 	}
 	private function validate_token() {
 		$token = $this->retrieve_token();
 		// Github Token
-		if ( ! empty(TOKEN) && isset( $_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_hmac( $algo, $content, TOKEN ) ) {
+		if ( ! empty(TOKEN) && isset( $_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_hmac( $algo, $this->json, TOKEN ) ) {
 			$this->forbid( 'X-Hub-Signature does not match TOKEN' );
 		// GitLab token
 		} elseif ( ! empty(TOKEN) && isset( $_SERVER[ "HTTP_X_GITLAB_TOKEN" ] ) && $token !== TOKEN ) {
