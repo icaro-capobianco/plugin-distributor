@@ -78,7 +78,7 @@ class Deployer {
 
 	}
 	private function retrieve_token() {
-		$token = '';
+		$token = false;
 		if ( ! $token && isset($_SERVER["HTTP_X_HUB_SIGNATURE"] ) ) {
 			list($algo, $token) = explode("=", $_SERVER["HTTP_X_HUB_SIGNATURE"], 2) + array("", "");
 		} elseif (isset($_SERVER["HTTP_X_GITLAB_TOKEN"])) {
@@ -86,7 +86,9 @@ class Deployer {
 		} elseif (isset($_GET["token"])) {
 			$token = $_GET["token"];
 		}
-		$this->log( '[TOKEN]', $token );
+		if ( ! $token ) {
+			$this->respond( 403, "No Access Token", true );
+		}
 		return $token;
 	}
 	private function validate_token() {
