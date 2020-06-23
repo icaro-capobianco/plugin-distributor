@@ -72,7 +72,7 @@ class Deployer {
 		$repo_path    = $plugins_dir . $repo_name;
 
 		if ( GIT_OVERWRITE ) {
-            $repo_ssh_url = str_replace( 'github.com', "$repo_name.github.com", $repo_ssh_url );
+            $repo_ssh_url = str_replace( 'github.com', "$repo_name", $repo_ssh_url );
 		}
 
 		$this->ref          = $ref;
