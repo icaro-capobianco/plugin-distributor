@@ -94,8 +94,11 @@ class Deployer {
 	private function validate_token() {
 		$token = $this->retrieve_token();
 		// Github Token
-		if ( ! empty(TOKEN) && isset( $_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_hmac( $algo, $this->json, TOKEN ) ) {
-			$this->forbid( 'X-Hub-Signature does not match TOKEN' );
+		if ( ! empty(TOKEN) && isset( $_SERVER["HTTP_X_HUB_SIGNATURE"]) ) {
+			list($algo, $token) = explode("=", $_SERVER["HTTP_X_HUB_SIGNATURE"], 2) + array("", "");
+			if ( $token !== hash_hmac( $algo, $this->json, TOKEN ) ) {
+				$this->forbid( 'X-Hub-Signature does not match TOKEN' );
+			}
 		// GitLab token
 		} elseif ( ! empty(TOKEN) && isset( $_SERVER[ "HTTP_X_GITLAB_TOKEN" ] ) && $token !== TOKEN ) {
 			$this->forbid( 'X-GitLab-Token does not match TOKEN' );
