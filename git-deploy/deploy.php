@@ -6,7 +6,6 @@ define('BRANCH_NAME', 'release');                                      // The br
 define('LOGFILE', 'deploy.log');                                       // The name of the file you want to log to.
 define('GIT', '/usr/bin/git');                                         // The path to the git executable
 define('GIT_OVERWRITE', true);                                         // The path to the git executable
-define('INSTALL_CMD', 'composer install --prefer-dist --no-dev');      // A command intall required packages
 define('ZIP_TO', '../wp-update-server/packages/');                     // Path where the plugin will be zip will be sent to
 
 function get_input() {

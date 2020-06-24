@@ -207,7 +207,9 @@ class Deployer {
 		$initial_dir = __DIR__;
 		chdir( $this->repo_path );
 		$this->log("[STEP] Run install CMD");
-		$this->exec_and_handle(INSTALL_CMD, true);
+		$this->exec_and_handle('composer install --prefer-dist --no-dev', true);
+		$this->exec_and_handle('composer update --prefer-dist --no-dev', true);
+		$this->exec_and_handle('composer dump-autoload', true);
 		$this->log("[STEP] ZIP Plugin");
 		chdir( '../' );
 		$this->exec_and_handle( "zip -r $this->repo_name.zip $this->repo_name/" );
