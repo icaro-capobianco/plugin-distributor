@@ -142,7 +142,7 @@ class Deployer {
 	}
 	private function pull_repo() {
 		$this->log("[STEP] Pull Repo");
-        $this->exec_and_handle( GIT . " --git-dir=$this->repo_path/.git pull 2>&1" );
+        $this->exec_and_handle( "cd $this->repo_path && " . GIT . " pull 2>&1" );
 	}
 	private function forbid( $reason ) {
 		$this->log( "[ACCESS DENIED] $reason\n" );
